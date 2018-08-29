@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.study.dao.UserDao">
+	<!-- 注册用户  -->
+	<insert id="add" parameterType="com.study.entity.User" useGeneratedKeys="true" keyProperty="id">
+		insert into user(username,password,mail,image,gender,state,lock_state) value(#{username},#{password},#{mail},#{image},1,1,0)
+	</insert>
+	
+    <!-- 查询用户 -->
+	<select id="getUser" parameterType = "java.util.Map" resultType = "com.study.entity.User">
+		select id,username,age,gender,mail,tel,image,state,lock_state from user
+		<where>
+			<if test="username != null">
+				username = #{username}
+			</if>
+			<if test="mail != null">
+				and mail = #{mail}
+			</if>
+			<if test="password != null">
+				and password = #{password}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 更新用户状态 -->
+	<update id="activeMail" parameterType="String">
+		update user set state = 0 where id = #{id}
+	</update>
+	
+	<!-- 更新用户信息 -->
+	<update id="update" parameterType="com.study.entity.User">
+		update user 
+		<set>
+			<if test="password != null">
+				password = #{password},
+			</if>
+			<if test="age != 0">
+				age = #{age},
+			</if>
+			<if test="gender == 1 or gender == 2">
+				gender = #{gender},
+			</if>
+			<if test="tel != null">
+				tel = #{tel},
+			</if>
+			<if test="image != null">
+				image = #{image}
+			</if>
+			<if test="username != null">
+				username = #{username}
+			</if>
+		</set>
+		<where>
+			mail = #{mail}
+		</where>
+	</update>
+	
+	<!-- 删除邮箱验证错误的人 -->
+	<delete id="delete" parameterType="String">
+		delete from user where id = #{id}
+	</delete> 
+</mapper>

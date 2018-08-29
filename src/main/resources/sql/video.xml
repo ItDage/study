@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.study.dao.VideoDao">
+
+<!-- 浏览历史相关 -->
+	<!-- 插入浏览记录 -->
+	<insert id="addHistory" parameterType="java.util.Map">
+		insert into history(v_id, mail, scan_time) values(#{v_id}, #{mail}, now())
+	</insert>
+	
+	<!-- 查询 -->
+	<select id="getVideoHistory" resultType="com.study.entity.Video" parameterType="java.util.Map">
+		select v.name, v.id, v.first_nav_name, v.second_nav_name, v.level, t.name teacher, h1.scan_time from video v 
+		LEFT JOIN history h1 on h1.v_id = v.id 
+		LEFT JOIN teacher t on t.id = v.teacher 
+		where v.id in (select v_id from history h WHERE h.mail = #{mail})
+		
+		order by h1.scan_time desc
+		
+		<if test="limit != 0">
+			limit #{page_no},#{limit}
+		</if>
+	</select>
+	<select id="getAllVideoHistory" resultType="com.study.entity.History" parameterType="java.util.Map">
+		select id,v_id,scan_time,mail from history
+		<where>
+			<if test="mail != null">
+				mail = #{mail}
+			</if>
+			<if test="v_id != 0">
+				and v_id = #{v_id}
+			</if>
+		</where>
+		<!-- <if test="limit != 0">
+        	limit #{page_no},#{limit}
+        </if> -->
+	</select>
+	
+	<!-- 更新最后浏览时间 -->
+	<update id="updateVideoHistory" parameterType="com.study.entity.History">
+		update history set scan_time = now() where id = #{id}
+	</update>
+	
+
+<!-- 视频相关 -->
+	<!-- 视频查询 -->
+    <select id="getVideo" resultType="com.study.entity.Video" parameterType="java.util.Map">
+        select id,name,src,image,level,first_nav_name,second_nav_name,teacher,page_view from video
+        <where>
+        	<if test="id != null">
+        		and id = #{id}
+        	</if>
+        	<if test="first_nav_name != null">
+        		first_nav_name = #{first_nav_name}
+        	</if>
+        	<if test="second_nav_name != null">
+        		and second_nav_name = #{second_nav_name}
+        	</if>
+        	<if test="level == 0 or level == 1 or level == 2">
+        		and level = #{level}
+        	</if>
+        	<!-- 用于主页技能提升 -->
+        	<if test="level == 3">
+        		and level = 2
+        	</if>
+        </where>
+        <if test="order1 != null">
+        	order by page_view desc
+        </if>
+         <if test="order2 != null">
+        	order by upload_time desc
+        </if>
+        <if test="limit == 1">
+        	limit #{page_no},10
+        </if>
+         <if test="limit == 5">
+        	limit #{page_no},5
+        </if>
+    </select>
+    
+    <update id="update" parameterType="com.study.entity.Video">
+    	update video
+    	<set>
+    		<if test="name != null">
+    			name = #{name},
+    		</if>
+    		<if test="image != null">
+    			image = #{image},
+    		</if>
+    		<if test="name != null">
+    			level = #{level},
+    		</if>
+    		<if test="name != null">
+    			first_nav_name = #{first_nav_name},
+    		</if>
+    		<if test="name != null">
+    			second_nav_name = #{second_nav_name},
+    		</if>
+    		<if test="teacher != null">
+    			teacher = #{teacher},
+    		</if>
+    		<if test="page_view != 0">
+    			page_view = page_view + 1
+    		</if>
+    	</set>
+    	<where>
+    		id = #{id}
+    	</where>
+    </update>
+    
+</mapper>
